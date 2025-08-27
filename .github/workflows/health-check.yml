@@ -31,7 +31,7 @@ jobs:
       - name: Notify Dynatrace (failure)
         if: failure()
         env:
-          DT_URL: ${{ secrets.DT_URL }}
+          DT_URL: ${{ secrets.https://lyt09047.apps.dynatrace.com/}}
           DT_TOKEN: ${{ secrets.DT_TOKEN }}
         run: |
           curl -X POST "$DT_URL/api/v2/events/ingest" \

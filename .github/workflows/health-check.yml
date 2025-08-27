@@ -5,7 +5,7 @@ on:
    branches: ["main"]  # Trigger this workflow on any push to the main branch
  workflow_dispatch: {}
  Schedule: 
-  -cron: "*/10 * * * *"# Allows for manual execution
+  - cron: "*/10 * * * *"# Allows for manual execution
   
 jobs:
  check-health:

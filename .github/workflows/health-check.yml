@@ -65,7 +65,8 @@ jobs:
           DT_URL: ${{ secrets.DT_ENV_URL }}
           DT_TOKEN: ${{ secrets.DT_TOKEN }}
         run: |
-          curl -X POST "$DT_URL/api/v2/events/ingest" \
+          DT_URL="$DT_URL/api/v2/events/ingest"
+          curl -v -X POST "$DT_URL" \
             -H "Authorization: Api-Token $DT_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{

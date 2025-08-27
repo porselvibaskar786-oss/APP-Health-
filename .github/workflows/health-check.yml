@@ -1,59 +1,59 @@
-name: "Health Check & Notification"
+name: Health Check & Notification
+
 on:
- push:
-   branches: ["main"]  # Trigger this workflow on any push to the main branch
- workflow_dispatch: {}
- schedule: 
-   -  cron: "*/10 * * * *" 
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"  # Runs every 10 minutes
+
 jobs:
- check-health:
-   runs-on: ubuntu-latest
-   steps:
-     - name: Checkout Code
-       uses: actions/checkout@v4
-     - name: Health Check - Run health check on the application
-       id: health_check
-       run: |
-         # Replace with your actual health check URL
-         HEALTH_CHECK_URL="https://13.53.124.28:3000/health"
-         response=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
-         # Check for a successful response (200 OK)
-         if [[ "$response" -ne 200 ]]; then
-           echo "Health check failed! Response code: $response"
-           exit 1  # Exit with a failure status to trigger the alert
-         else
-           echo "Health check passed. Response code: $response"
-         fi
-     - name: Notify Dynatrace (failure)
-       if: failure()  # Trigger this step only if health check fails
-       env:
-         DT_URL: ${{https://lyt09047.apps.dynatrace.com/ui/apps/dynatrace.classic.tokens/ui/access-tokens?gtf=-2h&gf=all }}  # Dynatrace API URL
-         DT_TOKEN: ${{ secrets.dt0c01.JYVCP24NQBE6EJN6UBDBJTMU.JD3QDP7A3DBPYLDQQMWUOREEO653RJQCERG56COZBZCXYT7I6UDTQEOZ52NJ6JTY
- }}  # Dynatrace API Token
-       run: |
-         curl -X POST "$DT_URL/api/v2/events/ingest" \
-          -H "Authorization: Api-Token $DT_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d @- <<'EOF'
-         {
-           "eventType": "CUSTOM_ALERT",
-           "title": "Health Check Failed",
-           "description": "The application health check failed.",
-           "properties": {
-             "source": "GitHub Actions",
-             "status": "failure"
-           }
-         }
-EOF
-     - name: Notify Symphony (failure)
-       if: failure()  # Trigger this step only if health check fails
-       env:
-         SYMPHONY_WEBHOOK_URL: ${{ secrets.SYMPHONY_WEBHOOK_URL }}  # Symphony Webhook URL
-       run: |
-         curl -X POST "$SYMPHONY_WEBHOOK_URL" \
-          -H "Content-Type: application/json" \
-          -d @- <<'EOF'
-         {
-           "text": "ALERT: Health Check failed for the application. Immediate attention required!"
-         }
-EOF
+  check-health:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Health Check - Run health check on the application
+        id: health_check
+        run: |
+          HEALTH_CHECK_URL="http://13.53.124.28:3000/health"
+          response=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
+          echo "Response code: $response"
+          if [[ "$response" -ne 200 ]]; then
+            echo "Health check failed!"
+            exit 1
+          else
+            echo "Health check passed."
+          fi
+
+      - name: Notify Dynatrace (failure)
+        if: failure()
+        env:
+          DT_URL: ${{ secrets.DT_URL }}
+          DT_TOKEN: ${{ secrets.DT_TOKEN }}
+        run: |
+          curl -X POST "$DT_URL/api/v2/events/ingest" \
+            -H "Authorization: Api-Token $DT_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "eventType": "CUSTOM_ALERT",
+              "title": "Health Check Failed",
+              "description": "The application health check failed.",
+              "properties": {
+                "source": "GitHub Actions",
+                "status": "failure"
+              }
+            }'
+
+      - name: Notify Symphony (failure)
+        if: failure()
+        env:
+          SYMPHONY_WEBHOOK_URL: ${{ secrets.SYMPHONY_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$SYMPHONY_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "ALERT: Health Check failed for the application. Immediate attention required!"
+            }'

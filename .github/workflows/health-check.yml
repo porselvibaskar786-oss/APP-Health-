@@ -1,10 +1,10 @@
-name: Health Check & Notification
+name: "Health Check & Notification"
 on:
  push:
    branches: ["main"]  # Trigger this workflow on any push to the main branch
  workflow_dispatch: {}
  schedule: 
-   - cron: "*/10 * * * *" # Allows for manual execution
+   -  cron: "*/10 * * * *" 
 jobs:
  check-health:
    runs-on: ubuntu-latest

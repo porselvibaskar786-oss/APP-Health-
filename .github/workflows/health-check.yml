@@ -21,6 +21,7 @@ jobs:
           HEALTH_CHECK_URL="http://13.53.124.28:3000/health"
           response=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
           echo "Response code: $response"
+          echo "health_status=$response" >> $GITHUB_ENV
           if [[ "$response" -ne 200 ]]; then
             echo "Health check failed!"
             exit 1
@@ -31,7 +32,7 @@ jobs:
       - name: Notify Dynatrace (failure)
         if: failure()
         env:
-          DT_URL: ${{ secrets.DT_ENV_URL}}
+          DT_URL: ${{ secrets.DT_ENV_URL }}
           DT_TOKEN: ${{ secrets.DT_TOKEN }}
         run: |
           curl -X POST "$DT_URL/api/v2/events/ingest" \
@@ -55,5 +56,35 @@ jobs:
           curl -X POST "$SYMPHONY_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d '{
-              "text": "ALERT: Health Check failed for the application. Immediate attention required!"
+              "text": "❌ ALERT: Health Check failed for the application. Immediate attention required!"
+            }'
+
+      - name: Notify Dynatrace (success)
+        if: success()
+        env:
+          DT_URL: ${{ secrets.DT_ENV_URL }}
+          DT_TOKEN: ${{ secrets.DT_TOKEN }}
+        run: |
+          curl -X POST "$DT_URL/api/v2/events/ingest" \
+            -H "Authorization: Api-Token $DT_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "eventType": "CUSTOM_INFO",
+              "title": "Health Check Passed",
+              "description": "The application is healthy.",
+              "properties": {
+                "source": "GitHub Actions",
+                "status": "success"
+              }
+            }'
+
+      - name: Notify Symphony (success)
+        if: success()
+        env:
+          SYMPHONY_WEBHOOK_URL: ${{ secrets.SYMPHONY_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$SYMPHONY_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "✅ SUCCESS: Health Check passed. The application is running smoothly."
             }'

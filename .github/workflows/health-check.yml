@@ -5,7 +5,7 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: "0 0 */2 * *"  # Runs every 10 minutes
+    - cron: "*/10 * * * *"  # Runs every 10 minutes
 
 jobs:
   check-health:
@@ -18,7 +18,7 @@ jobs:
       - name: Health Check - Run health check on the application
         id: health_check
         run: |
-          HEALTH_CHECK_URL="http://13.53.124.28:3000/health"
+          HEALTH_CHECK_URL="http://http://56.228.6.225:3000/health"
           response=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
           echo "Response code: $response"
           echo "health_status=$response" >> $GITHUB_ENV

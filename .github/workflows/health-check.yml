@@ -48,16 +48,7 @@ jobs:
               }
             }'
 
-      - name: Notify Symphony (failure)
-        if: failure()
-        env:
-          SYMPHONY_WEBHOOK_URL: ${{ secrets.SYMPHONY_WEBHOOK_URL }}
-        run: |
-          curl -X POST "$SYMPHONY_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": "❌ ALERT: Health Check failed for the application. Immediate attention required!"
-            }'
+      
 
       - name: Notify Dynatrace (success)
         if: success()
@@ -79,13 +70,4 @@ jobs:
               }
             }'
 
-      - name: Notify Symphony (success)
-        if: success()
-        env:
-          SYMPHONY_WEBHOOK_URL: ${{ secrets.SYMPHONY_WEBHOOK_URL }}
-        run: |
-          curl -X POST "$SYMPHONY_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": "✅ SUCCESS: Health Check passed. The application is running smoothly."
-            }'
+   

@@ -5,7 +5,7 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: "*/2 * * * *"  # Runs every 10 minutes
+    - cron: "*/2 * * 3 *"  # Runs every 10 minutes
 
 jobs:
   check-health:
